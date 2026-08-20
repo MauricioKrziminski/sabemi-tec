@@ -32,11 +32,15 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     throw new ApiError(await describe(response), response.status);
   }
 
-  if (response.status === 204) {
+  // Nem toda resposta de sucesso traz corpo. O reprocessamento, por exemplo, responde 202 sem
+  // conteúdo, e tentar interpretar isso como JSON quebrava a chamada depois de ela ter dado certo.
+  if (response.status === 204 || response.headers.get("content-length") === "0") {
     return undefined as T;
   }
 
-  return (await response.json()) as T;
+  const body = await response.text();
+
+  return (body ? JSON.parse(body) : undefined) as T;
 }
 
 async function describe(response: Response) {

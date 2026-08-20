@@ -27,6 +27,7 @@ export function Dashboard() {
   const contractId = useDebouncedValue(contractInput);
 
   const [selected, setSelected] = useState<PaymentEvent | null>(null);
+  const closeDetails = useCallback(() => setSelected(null), []);
 
   const { highlighted } = useLivePayments();
 
@@ -113,7 +114,7 @@ export function Dashboard() {
         {data ? `${data.total} eventos na listagem atual.` : "Carregando eventos."}
       </p>
 
-      <PaymentDetailDrawer payment={selected} onClose={() => setSelected(null)} />
+      <PaymentDetailDrawer payment={selected} onClose={closeDetails} />
     </div>
   );
 }

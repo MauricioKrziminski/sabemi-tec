@@ -10,6 +10,11 @@ const compactCurrency = new Intl.NumberFormat("pt-BR", {
   maximumFractionDigits: 1,
 });
 
+const decimal = new Intl.NumberFormat("pt-BR", {
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+});
+
 const integer = new Intl.NumberFormat("pt-BR");
 
 const dateTime = new Intl.DateTimeFormat("pt-BR", {
@@ -30,6 +35,9 @@ export const formatCurrency = (value: number | null | undefined) =>
   value === null || value === undefined ? "-" : currency.format(value);
 
 export const formatCompactCurrency = (value: number) => compactCurrency.format(value);
+
+export const formatAmount = (value: number | null | undefined) =>
+  value === null || value === undefined ? "-" : decimal.format(value);
 
 export const formatNumber = (value: number) => integer.format(value);
 

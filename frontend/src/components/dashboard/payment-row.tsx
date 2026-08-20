@@ -3,7 +3,7 @@
 import { AlertTriangle, Ban, ChevronRight, GitCompareArrows } from "lucide-react";
 import { motion } from "motion/react";
 import { cn } from "@/lib/cn";
-import { formatCurrency, formatDateTime, formatRelative } from "@/lib/format";
+import { formatAmount, formatDateTime, formatRelative } from "@/lib/format";
 import type { PaymentEvent } from "@/types/payment";
 import { paymentGrid } from "./payment-columns";
 import { StatusPill } from "./status-pill";
@@ -44,21 +44,22 @@ export function PaymentRow({ payment, highlighted, onSelect }: PaymentRowProps) 
 
         <span
           className={cn(
-            "numeric text-sm md:text-right",
+            "numeric flex items-baseline justify-end gap-1 text-sm",
             failing ? "text-ink-muted" : "text-ink",
           )}
         >
-          {formatCurrency(payment.amount)}
+          {payment.amount !== null && <span className="text-xs text-ink-faint">R$</span>}
+          <span className="w-[9ch] text-right">{formatAmount(payment.amount)}</span>
         </span>
 
         <span
-          className="justify-self-end text-xs text-ink-faint md:justify-self-start"
+          className="justify-self-end text-xs text-ink-faint"
           title={formatDateTime(payment.receivedAt)}
         >
           {formatRelative(payment.receivedAt)}
         </span>
 
-        <span className="col-span-2 flex items-center gap-2 md:col-span-1 md:justify-self-end">
+        <span className="col-span-2 flex items-center justify-end gap-2 md:col-span-1">
           <StatusPill payment={payment} />
           {payment.attempts > 1 && (
             <span

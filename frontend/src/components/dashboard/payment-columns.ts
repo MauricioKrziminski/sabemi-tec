@@ -1,10 +1,10 @@
 export const paymentGrid =
-  "grid grid-cols-2 gap-x-4 gap-y-1 md:grid-cols-[minmax(0,1.15fr)_minmax(0,0.95fr)_minmax(0,0.85fr)_minmax(0,0.65fr)_minmax(0,auto)_1rem] md:gap-x-8";
+  "grid grid-cols-2 gap-x-4 gap-y-1 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_7rem_5.5rem_8.5rem_1rem] md:gap-x-6";
 
 export const paymentColumns = [
   { label: "Transação", align: "text-left" },
   { label: "Contrato", align: "text-left" },
   { label: "Valor", align: "text-right" },
-  { label: "Recebido", align: "text-left" },
+  { label: "Recebido", align: "text-right" },
   { label: "Situação", align: "text-right" },
 ] as const;

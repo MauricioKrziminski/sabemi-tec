@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Sabemi.Payments.Core.Security;
 using Sabemi.Payments.Infrastructure;
 using Sabemi.Payments.Infrastructure.Persistence;
 using Scalar.AspNetCore;
@@ -7,6 +8,16 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddOpenApi();
 builder.Services.AddProblemDetails();
+builder.Services.AddSingleton(TimeProvider.System);
+
+builder.Services.AddOptions<WebhookSignatureOptions>()
+    .Bind(builder.Configuration.GetSection(WebhookSignatureOptions.SectionName))
+    .Validate(
+        options => !string.IsNullOrWhiteSpace(options.Secret),
+        "O segredo de assinatura do webhook não foi configurado.")
+    .ValidateOnStart();
+
+builder.Services.AddSingleton<WebhookSignatureValidator>();
 builder.Services.AddPaymentsInfrastructure(builder.Configuration);
 builder.Services.AddHealthChecks().AddDbContextCheck<PaymentsDbContext>("postgres");
 

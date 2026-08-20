@@ -45,6 +45,13 @@ public static class InfrastructureServiceCollectionExtensions
 
         services.AddScoped<WebhookIngestionService>();
 
+        services.AddOptions<ProcessingOptions>()
+            .Bind(configuration.GetSection(ProcessingOptions.SectionName));
+
+        services.AddSingleton<PaymentEventProcessor>();
+        services.AddHostedService<PaymentProcessingWorker>();
+        services.AddHostedService<PaymentRecoveryWorker>();
+
         return services;
     }
 }

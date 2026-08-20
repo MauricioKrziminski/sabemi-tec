@@ -1,10 +1,11 @@
 "use client";
 
-import { AlertTriangle, ChevronRight, GitCompareArrows } from "lucide-react";
+import { AlertTriangle, Ban, ChevronRight, GitCompareArrows } from "lucide-react";
 import { motion } from "motion/react";
 import { cn } from "@/lib/cn";
 import { formatCurrency, formatDateTime, formatRelative } from "@/lib/format";
 import type { PaymentEvent } from "@/types/payment";
+import { paymentGrid } from "./payment-columns";
 import { StatusPill } from "./status-pill";
 
 interface PaymentRowProps {
@@ -15,6 +16,7 @@ interface PaymentRowProps {
 
 export function PaymentRow({ payment, highlighted, onSelect }: PaymentRowProps) {
   const failing = payment.view === "error";
+  const declined = payment.processingStatus === "processed" && failing;
 
   return (
     <motion.li
@@ -23,18 +25,14 @@ export function PaymentRow({ payment, highlighted, onSelect }: PaymentRowProps) 
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.24, ease: "easeOut" }}
-      className={cn(
-        "border-b border-line last:border-b-0",
-        highlighted && "animate-flash",
-      )}
+      className={cn("border-b border-line last:border-b-0", highlighted && "animate-flash")}
     >
       <button
         onClick={() => onSelect(payment)}
         aria-label={`Abrir detalhe da transação ${payment.transactionId}`}
         className={cn(
-          "group grid w-full grid-cols-2 items-center gap-x-4 gap-y-1 px-4 py-3 text-left",
-          "transition-colors hover:bg-surface-hover",
-          "md:grid-cols-[1.1fr_0.9fr_0.9fr_0.8fr_auto_auto] md:px-5",
+          paymentGrid,
+          "group w-full items-center px-4 py-3 text-left transition-colors hover:bg-surface-hover md:px-5",
           failing && "border-l-2 border-l-negative",
         )}
       >
@@ -83,11 +81,21 @@ export function PaymentRow({ payment, highlighted, onSelect }: PaymentRowProps) 
           aria-hidden
         />
 
-        {payment.errorMessage && (
+        {payment.errorMessage ? (
           <span className="col-span-2 flex items-start gap-2 pt-1 md:col-span-6">
             <AlertTriangle className="mt-0.5 size-3.5 shrink-0 text-negative" aria-hidden />
             <span className="text-xs leading-relaxed text-negative/90">{payment.errorMessage}</span>
           </span>
+        ) : (
+          declined && (
+            <span className="col-span-2 flex items-start gap-2 pt-1 md:col-span-6">
+              <Ban className="mt-0.5 size-3.5 shrink-0 text-ink-faint" aria-hidden />
+              <span className="text-xs leading-relaxed text-ink-muted">
+                Recusado pelo banco parceiro. O processamento correu bem e o valor não entra no
+                total liquidado do contrato.
+              </span>
+            </span>
+          )
         )}
       </button>
     </motion.li>

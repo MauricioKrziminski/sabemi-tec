@@ -3,9 +3,11 @@
 import { AnimatePresence } from "motion/react";
 import { Inbox, ServerCrash } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/cn";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatNumber } from "@/lib/format";
 import type { PagedResult, PaymentEvent } from "@/types/payment";
+import { paymentColumns, paymentGrid } from "./payment-columns";
 import { PaymentRow } from "./payment-row";
 
 interface PaymentsTableProps {
@@ -17,8 +19,6 @@ interface PaymentsTableProps {
   onRetry: () => void;
   onPageChange: (page: number) => void;
 }
-
-const columns = ["Transação", "Contrato", "Valor", "Recebido", "Situação"];
 
 export function PaymentsTable({
   data,
@@ -73,18 +73,14 @@ export function PaymentsTable({
     <div className="panel overflow-hidden">
       <div
         aria-hidden
-        className="hidden grid-cols-[1.1fr_0.9fr_0.9fr_0.8fr_auto_auto] gap-x-4 border-b border-line px-5 py-2.5 md:grid"
+        className={cn(paymentGrid, "hidden border-b border-line px-5 py-2.5 md:grid")}
       >
-        {columns.map((column, index) => (
+        {paymentColumns.map((column) => (
           <span
-            key={column}
-            className={
-              index === 2
-                ? "text-right text-[11px] uppercase tracking-[0.12em] text-ink-faint"
-                : "text-[11px] uppercase tracking-[0.12em] text-ink-faint"
-            }
+            key={column.label}
+            className={cn("text-[11px] uppercase tracking-[0.12em] text-ink-faint", column.align)}
           >
-            {column}
+            {column.label}
           </span>
         ))}
         <span />

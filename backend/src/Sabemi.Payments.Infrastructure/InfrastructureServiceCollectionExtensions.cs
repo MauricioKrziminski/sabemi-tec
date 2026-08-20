@@ -9,6 +9,7 @@ using Sabemi.Payments.Core.Validation;
 using Sabemi.Payments.Infrastructure.Ingestion;
 using Sabemi.Payments.Infrastructure.Persistence;
 using Sabemi.Payments.Infrastructure.Processing;
+using Sabemi.Payments.Infrastructure.Queries;
 
 namespace Sabemi.Payments.Infrastructure;
 
@@ -47,6 +48,9 @@ public static class InfrastructureServiceCollectionExtensions
 
         services.AddOptions<ProcessingOptions>()
             .Bind(configuration.GetSection(ProcessingOptions.SectionName));
+
+        services.AddScoped<PaymentQueryService>();
+        services.AddScoped<PaymentReprocessService>();
 
         services.AddSingleton<PaymentEventProcessor>();
         services.AddHostedService<PaymentProcessingWorker>();

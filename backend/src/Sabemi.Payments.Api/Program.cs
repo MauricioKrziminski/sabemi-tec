@@ -3,6 +3,8 @@ using System.Text.Json.Serialization;
 using Microsoft.EntityFrameworkCore;
 using Sabemi.Payments.Api.Endpoints;
 using Sabemi.Payments.Api.Middleware;
+using Sabemi.Payments.Api.RealTime;
+using Sabemi.Payments.Core.Processing;
 using Sabemi.Payments.Core.Security;
 using Sabemi.Payments.Infrastructure;
 using Sabemi.Payments.Infrastructure.Persistence;
@@ -26,6 +28,17 @@ builder.Services.AddOptions<WebhookSignatureOptions>()
     .ValidateOnStart();
 
 builder.Services.AddSingleton<WebhookSignatureValidator>();
+
+// O protocolo do SignalR tem serialização própria, separada da configurada para o HTTP.
+builder.Services.AddSignalR().AddJsonProtocol(options =>
+{
+    options.PayloadSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+    options.PayloadSerializerOptions.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.CamelCase));
+});
+
+// Registrado antes da infraestrutura, que só define o notificador padrão se ainda não houver um.
+builder.Services.AddSingleton<IPaymentEventNotifier, SignalRPaymentEventNotifier>();
+
 builder.Services.AddPaymentsInfrastructure(builder.Configuration);
 builder.Services.AddHealthChecks().AddDbContextCheck<PaymentsDbContext>("postgres");
 
@@ -54,6 +67,7 @@ app.MapHealthChecks("/health/ready").WithTags("Infraestrutura");
 
 app.MapWebhookEndpoints();
 app.MapDashboardEndpoints();
+app.MapHub<PaymentsHub>(PaymentsHub.Route);
 
 app.Run();
 

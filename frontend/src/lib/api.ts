@@ -57,7 +57,7 @@ export const api = {
     });
 
     if (filters.view) params.set("status", filters.view);
-    if (filters.search) params.set("search", filters.search);
+    if (filters.contractId) params.set("contractId", filters.contractId);
 
     return request<PagedResult<PaymentEvent>>(`/api/payments?${params}`);
   },

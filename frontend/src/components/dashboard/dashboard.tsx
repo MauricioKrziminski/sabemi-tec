@@ -18,11 +18,11 @@ export function Dashboard() {
   const searchParams = useSearchParams();
 
   const view = readView(searchParams.get("status"));
-  const searchParam = searchParams.get("busca") ?? "";
+  const contractParam = searchParams.get("contrato") ?? "";
   const page = Math.max(Number(searchParams.get("pagina") ?? 1), 1);
 
-  const [searchInput, setSearchInput] = useState(searchParam);
-  const search = useDebouncedValue(searchInput);
+  const [contractInput, setContractInput] = useState(contractParam);
+  const contractId = useDebouncedValue(contractInput);
 
   const [selected, setSelected] = useState<PaymentEvent | null>(null);
   const closeDetails = useCallback(() => setSelected(null), []);
@@ -32,10 +32,10 @@ export function Dashboard() {
   const filters: PaymentFilters = useMemo(
     () => ({
       view: view === "all" ? null : (view as PaymentView),
-      search,
+      contractId,
       page,
     }),
-    [view, search, page],
+    [view, contractId, page],
   );
 
   const { data, isPending, error, refetch } = usePayments(filters);
@@ -59,10 +59,10 @@ export function Dashboard() {
     [updateParams],
   );
 
-  const onSearchChange = useCallback(
+  const onContractIdChange = useCallback(
     (value: string) => {
-      setSearchInput(value);
-      updateParams({ busca: value || null, pagina: null });
+      setContractInput(value);
+      updateParams({ contrato: value || null, pagina: null });
     },
     [updateParams],
   );
@@ -91,8 +91,8 @@ export function Dashboard() {
         <FiltersBar
           view={view}
           onViewChange={onViewChange}
-          search={searchInput}
-          onSearchChange={onSearchChange}
+          contractId={contractInput}
+          onContractIdChange={onContractIdChange}
         />
 
         <PaymentsTable

@@ -175,13 +175,10 @@ public sealed class PaymentQueryService(PaymentsDbContext context, TimeProvider 
 
     private static IQueryable<WebhookEventLog> Filter(IQueryable<WebhookEventLog> source, PaymentQuery query)
     {
-        if (!string.IsNullOrWhiteSpace(query.Search))
+        if (!string.IsNullOrWhiteSpace(query.ContractId))
         {
-            var term = $"%{query.Search}%";
-
             source = source.Where(log =>
-                EF.Functions.ILike(log.TransactionId, term)
-                || (log.ContractId != null && EF.Functions.ILike(log.ContractId, term)));
+                log.ContractId != null && EF.Functions.ILike(log.ContractId, $"%{query.ContractId}%"));
         }
 
         return query.View switch

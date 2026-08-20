@@ -12,7 +12,7 @@ public static class DashboardEndpoints
         var payments = routes.MapGroup("/api/payments").WithTags("Pagamentos");
 
         payments.MapGet("", ListPaymentsAsync)
-            .WithSummary("Lista os eventos recebidos, com filtro por situação e busca por transação ou contrato");
+            .WithSummary("Lista os eventos recebidos, com filtro por situação e por contrato");
 
         payments.MapGet("/{id:guid}", GetPaymentAsync)
             .WithSummary("Detalha um evento, incluindo o payload original");
@@ -34,7 +34,7 @@ public static class DashboardEndpoints
     private static async Task<IResult> ListPaymentsAsync(
         PaymentQueryService queries,
         [FromQuery] string? status,
-        [FromQuery] string? search,
+        [FromQuery] string? contractId,
         [FromQuery] int? page,
         [FromQuery] int? pageSize,
         CancellationToken cancellationToken)
@@ -49,7 +49,7 @@ public static class DashboardEndpoints
             });
         }
 
-        var query = PaymentQuery.Create(view, search, page, pageSize);
+        var query = PaymentQuery.Create(view, contractId, page, pageSize);
         var result = await queries.ListAsync(query, cancellationToken);
 
         return TypedResults.Ok(result);

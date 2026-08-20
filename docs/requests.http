@@ -67,8 +67,8 @@ GET {{host}}/api/payments?status=error
 ### Somente liquidados, segunda página
 GET {{host}}/api/payments?status=success&page=2&pageSize=10
 
-### Busca por transação ou contrato, sem diferenciar maiúsculas
-GET {{host}}/api/payments?search=CT-1029
+### Filtrando por contrato, sem diferenciar maiúsculas
+GET {{host}}/api/payments?contractId=CT-1029
 
 ### Detalhe de um evento
 GET {{host}}/api/payments/00000000-0000-0000-0000-000000000000

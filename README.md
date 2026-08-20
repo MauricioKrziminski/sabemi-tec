@@ -222,8 +222,8 @@ inserido direto no banco, chegada fora de ordem, reprocessamento manual e os fil
 ## O painel
 
 - Lista em tempo real por SignalR, com realce na linha que acabou de chegar ou mudar de estado.
-- Filtro por situação (todos, sucesso, erro, pendentes) e busca por identificador de transação ou
-  de contrato, ambos refletidos na URL, então um recorte do painel é compartilhável.
+- Filtro por situação (todos, sucesso, erro, pendentes) e busca por contrato, ambos refletidos na
+  URL, então um recorte do painel é compartilhável.
 - Alerta visual claro para eventos com falha, com a mensagem de validação na própria linha.
 - Detalhe lateral com o payload original, a situação do contrato, a linha do tempo do
   processamento e a ação de reprocessar.

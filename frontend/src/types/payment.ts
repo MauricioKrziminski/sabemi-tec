@@ -69,6 +69,6 @@ export interface Metrics {
 
 export interface PaymentFilters {
   view: PaymentView | null;
-  search: string;
+  contractId: string;
   page: number;
 }

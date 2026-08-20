@@ -25,32 +25,26 @@ public sealed class DashboardApiTests(PaymentsApiFactory factory) : IntegrationT
         var comSucesso = await GetPaymentsAsync("?status=sucesso");
         Assert.Equal(2, comSucesso.GetProperty("total").GetInt32());
 
-        var doContrato = await GetPaymentsAsync("?search=CT-A");
+        var doContrato = await GetPaymentsAsync("?contractId=CT-A");
         Assert.Equal(2, doContrato.GetProperty("total").GetInt32());
 
-        var combinado = await GetPaymentsAsync("?search=CT-A&status=error");
+        var combinado = await GetPaymentsAsync("?contractId=CT-A&status=error");
         Assert.Equal(1, combinado.GetProperty("total").GetInt32());
         Assert.Equal("TRX-E1", TransactionIds(combinado).Single());
     }
 
     [Fact]
-    public async Task Busca_encontra_por_transacao_e_por_contrato_sem_diferenciar_caixa()
+    public async Task Filtro_de_contrato_aceita_parte_do_identificador_sem_diferenciar_caixa()
     {
         await SeedAsync();
 
-        var porTransacao = await GetPaymentsAsync("?search=TRX-S");
-        Assert.Equal(2, porTransacao.GetProperty("total").GetInt32());
+        var emMinusculas = await GetPaymentsAsync("?contractId=ct-b");
+        Assert.Equal(2, emMinusculas.GetProperty("total").GetInt32());
 
-        var emCaixaAlta = await GetPaymentsAsync("?search=trx-e1");
-        Assert.Equal("TRX-E1", TransactionIds(emCaixaAlta).Single());
+        var parcial = await GetPaymentsAsync("?contractId=T-A");
+        Assert.Equal(2, parcial.GetProperty("total").GetInt32());
 
-        var porContratoEmMinusculas = await GetPaymentsAsync("?search=ct-b");
-        Assert.Equal(2, porContratoEmMinusculas.GetProperty("total").GetInt32());
-
-        var parcial = await GetPaymentsAsync("?search=E1");
-        Assert.Equal("TRX-E1", TransactionIds(parcial).Single());
-
-        var semResultado = await GetPaymentsAsync("?search=inexistente");
+        var semResultado = await GetPaymentsAsync("?contractId=CT-INEXISTENTE");
         Assert.Equal(0, semResultado.GetProperty("total").GetInt32());
         Assert.Equal(0, semResultado.GetProperty("totalPages").GetInt32());
     }

@@ -17,11 +17,16 @@ const options: SegmentedOption<ViewFilter>[] = [
 interface FiltersBarProps {
   view: ViewFilter;
   onViewChange: (view: ViewFilter) => void;
-  search: string;
-  onSearchChange: (value: string) => void;
+  contractId: string;
+  onContractIdChange: (value: string) => void;
 }
 
-export function FiltersBar({ view, onViewChange, search, onSearchChange }: FiltersBarProps) {
+export function FiltersBar({
+  view,
+  onViewChange,
+  contractId,
+  onContractIdChange,
+}: FiltersBarProps) {
   const searchRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -50,11 +55,11 @@ export function FiltersBar({ view, onViewChange, search, onSearchChange }: Filte
 
       <SearchInput
         ref={searchRef}
-        label="Buscar por transação ou contrato"
-        placeholder="Buscar transação ou contrato"
-        value={search}
-        onChange={onSearchChange}
-        className="sm:w-80"
+        label="Buscar por identificador do contrato"
+        placeholder="Buscar contrato"
+        value={contractId}
+        onChange={onContractIdChange}
+        className="sm:w-72"
       />
     </div>
   );

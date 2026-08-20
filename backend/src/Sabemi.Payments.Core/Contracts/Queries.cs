@@ -3,14 +3,14 @@ using Sabemi.Payments.Core.Domain;
 
 namespace Sabemi.Payments.Core.Contracts;
 
-public sealed record PaymentQuery(PaymentView? View, string? Search, int Page, int PageSize)
+public sealed record PaymentQuery(PaymentView? View, string? ContractId, int Page, int PageSize)
 {
     public const int DefaultPageSize = 20;
     public const int MaxPageSize = 100;
 
-    public static PaymentQuery Create(PaymentView? view, string? search, int? page, int? pageSize) => new(
+    public static PaymentQuery Create(PaymentView? view, string? contractId, int? page, int? pageSize) => new(
         view,
-        string.IsNullOrWhiteSpace(search) ? null : search.Trim(),
+        string.IsNullOrWhiteSpace(contractId) ? null : contractId.Trim(),
         Math.Max(page ?? 1, 1),
         Math.Clamp(pageSize ?? DefaultPageSize, 1, MaxPageSize));
 }

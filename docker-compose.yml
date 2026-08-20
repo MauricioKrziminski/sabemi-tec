@@ -17,5 +17,34 @@ services:
       timeout: 5s
       retries: 10
 
+  api:
+    build:
+      context: ./backend
+    container_name: sabemi-api
+    restart: unless-stopped
+    environment:
+      ConnectionStrings__Payments: >-
+        Host=db;Port=5432;Database=${POSTGRES_DB:-sabemi_payments};Username=${POSTGRES_USER:-sabemi};Password=${POSTGRES_PASSWORD:-sabemi}
+      Webhook__Secret: ${WEBHOOK_SIGNING_SECRET:-sabemi-webhook-secret-local}
+      Cors__AllowedOrigins__0: ${DASHBOARD_URL:-http://localhost:3000}
+    ports:
+      - "8080:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  web:
+    build:
+      context: ./frontend
+      args:
+        # O painel roda no navegador do avaliador, então a URL da API é a do host.
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8080}
+    container_name: sabemi-web
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    depends_on:
+      - api
+
 volumes:
   sabemi-db-data:

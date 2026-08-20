@@ -1,0 +1,83 @@
+### Coleção de requisições da API de webhooks de pagamento
+###
+### Os endpoints de leitura rodam em qualquer cliente HTTP.
+### O envio do webhook exige a assinatura HMAC: o bloco de pré-requisição abaixo funciona no
+### cliente HTTP do Rider e do IntelliJ. Em qualquer outro cliente, use os scripts prontos:
+###
+###   bash scripts/send-webhook.sh --demo
+###   ./scripts/send-webhook.ps1 -Demo
+
+@host = http://localhost:8080
+@secret = sabemi-webhook-secret-local
+
+### Saúde da aplicação
+GET {{host}}/health/ready
+
+### Documentação interativa da API
+GET {{host}}/scalar
+
+### Pagamento liquidado
+< {%
+  const body = JSON.stringify({
+    id_transacao: "TRX-" + Date.now(),
+    id_contrato: "CT-1029",
+    valor: 1240.00,
+    data_pagamento: new Date(Date.now() - 3600000).toISOString(),
+    status: "sucesso"
+  });
+
+  const timestamp = Math.floor(Date.now() / 1000);
+  const signature = crypto.hmac.sha256()
+    .withTextSecret(request.environment.get("secret") || "sabemi-webhook-secret-local")
+    .updateWithText(timestamp + "." + body)
+    .digest()
+    .toHex();
+
+  request.variables.set("body", body);
+  request.variables.set("timestamp", timestamp);
+  request.variables.set("signature", "sha256=" + signature);
+%}
+POST {{host}}/webhooks/pagamento
+Content-Type: application/json
+X-Timestamp: {{timestamp}}
+X-Signature: {{signature}}
+
+{{body}}
+
+### Assinatura inválida, deve responder 401
+POST {{host}}/webhooks/pagamento
+Content-Type: application/json
+X-Timestamp: 1787241187
+X-Signature: sha256=0000000000000000000000000000000000000000000000000000000000000000
+
+{
+  "id_transacao": "TRX-FORJADO",
+  "id_contrato": "CT-1029",
+  "valor": 10.00,
+  "data_pagamento": "2026-08-20T10:00:00-03:00",
+  "status": "sucesso"
+}
+
+### Listagem completa
+GET {{host}}/api/payments
+
+### Somente eventos com alerta
+GET {{host}}/api/payments?status=error
+
+### Somente liquidados, segunda página
+GET {{host}}/api/payments?status=success&page=2&pageSize=10
+
+### Filtrando por contrato
+GET {{host}}/api/payments?contractId=CT-1029
+
+### Detalhe de um evento
+GET {{host}}/api/payments/00000000-0000-0000-0000-000000000000
+
+### Reprocessamento manual de um evento com falha
+POST {{host}}/api/payments/00000000-0000-0000-0000-000000000000/reprocess
+
+### Situação consolidada dos contratos
+GET {{host}}/api/contracts
+
+### Resumo do painel
+GET {{host}}/api/metrics

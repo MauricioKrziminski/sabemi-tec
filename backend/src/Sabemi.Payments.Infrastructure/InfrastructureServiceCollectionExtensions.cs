@@ -1,7 +1,14 @@
+using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Sabemi.Payments.Core.Contracts;
+using Sabemi.Payments.Core.Processing;
+using Sabemi.Payments.Core.Validation;
+using Sabemi.Payments.Infrastructure.Ingestion;
 using Sabemi.Payments.Infrastructure.Persistence;
+using Sabemi.Payments.Infrastructure.Processing;
 
 namespace Sabemi.Payments.Infrastructure;
 
@@ -25,6 +32,18 @@ public static class InfrastructureServiceCollectionExtensions
 
         services.AddScoped(provider =>
             provider.GetRequiredService<IDbContextFactory<PaymentsDbContext>>().CreateDbContext());
+
+        services.TryAddSingleton(TimeProvider.System);
+        services.AddScoped<IValidator<PaymentWebhookRequest>, PaymentWebhookRequestValidator>();
+
+        services.AddSingleton<ChannelPaymentEventQueue>();
+        services.AddSingleton<IPaymentEventQueue>(provider =>
+            provider.GetRequiredService<ChannelPaymentEventQueue>());
+
+        // A API troca esta implementação pela que publica no hub SignalR.
+        services.TryAddSingleton<IPaymentEventNotifier, NullPaymentEventNotifier>();
+
+        services.AddScoped<WebhookIngestionService>();
 
         return services;
     }

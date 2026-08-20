@@ -55,7 +55,7 @@ namespace Sabemi.Payments.Infrastructure.Persistence.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("pk_webhook_event_logs", x => x.id);
-                    table.CheckConstraint("ck_webhook_event_logs_amount", "amount IS NULL OR amount > 0");
+                    table.CheckConstraint("ck_webhook_event_logs_amount", "amount IS NULL OR amount > 0 OR status = 'Invalid'");
                     table.CheckConstraint("ck_webhook_event_logs_status", "status IN ('Pending', 'Processing', 'Processed', 'Invalid', 'Failed', 'PermanentlyFailed')");
                 });
 

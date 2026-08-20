@@ -12,7 +12,7 @@ using Sabemi.Payments.Infrastructure.Persistence;
 namespace Sabemi.Payments.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(PaymentsDbContext))]
-    [Migration("20260820153749_InitialSchema")]
+    [Migration("20260820154727_InitialSchema")]
     partial class InitialSchema
     {
         /// <inheritdoc />
@@ -201,7 +201,7 @@ namespace Sabemi.Payments.Infrastructure.Persistence.Migrations
 
                     b.ToTable("webhook_event_logs", null, t =>
                         {
-                            t.HasCheckConstraint("ck_webhook_event_logs_amount", "amount IS NULL OR amount > 0");
+                            t.HasCheckConstraint("ck_webhook_event_logs_amount", "amount IS NULL OR amount > 0 OR status = 'Invalid'");
 
                             t.HasCheckConstraint("ck_webhook_event_logs_status", "status IN ('Pending', 'Processing', 'Processed', 'Invalid', 'Failed', 'PermanentlyFailed')");
                         });

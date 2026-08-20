@@ -14,9 +14,11 @@ internal sealed class WebhookEventLogConfiguration : IEntityTypeConfiguration<We
                 "ck_webhook_event_logs_status",
                 "status IN ('Pending', 'Processing', 'Processed', 'Invalid', 'Failed', 'PermanentlyFailed')");
 
+            // Eventos reprovados na validação guardam o valor exatamente como veio, inclusive
+            // zero ou negativo, porque o painel precisa mostrar o dado que causou a recusa.
             table.HasCheckConstraint(
                 "ck_webhook_event_logs_amount",
-                "amount IS NULL OR amount > 0");
+                "amount IS NULL OR amount > 0 OR status = 'Invalid'");
         });
 
         builder.HasKey(log => log.Id);

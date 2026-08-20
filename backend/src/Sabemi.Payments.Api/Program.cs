@@ -1,4 +1,7 @@
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.EntityFrameworkCore;
+using Sabemi.Payments.Api.Endpoints;
 using Sabemi.Payments.Core.Security;
 using Sabemi.Payments.Infrastructure;
 using Sabemi.Payments.Infrastructure.Persistence;
@@ -8,7 +11,9 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddOpenApi();
 builder.Services.AddProblemDetails();
-builder.Services.AddSingleton(TimeProvider.System);
+
+builder.Services.ConfigureHttpJsonOptions(options =>
+    options.SerializerOptions.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.CamelCase)));
 
 builder.Services.AddOptions<WebhookSignatureOptions>()
     .Bind(builder.Configuration.GetSection(WebhookSignatureOptions.SectionName))
@@ -33,6 +38,8 @@ app.MapScalarApiReference();
 
 app.MapHealthChecks("/health/live").WithTags("Infraestrutura");
 app.MapHealthChecks("/health/ready").WithTags("Infraestrutura");
+
+app.MapWebhookEndpoints();
 
 app.Run();
 

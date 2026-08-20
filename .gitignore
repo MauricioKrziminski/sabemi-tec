@@ -1,0 +1,38 @@
+# Ambiente
+.env
+.env.local
+*.local
+
+# .NET
+bin/
+obj/
+[Dd]ebug/
+[Rr]elease/
+artifacts/
+*.user
+*.suo
+*.userprefs
+.vs/
+TestResults/
+coverage/
+*.coverage
+*.trx
+
+# Node e Next.js
+node_modules/
+.next/
+out/
+build/
+.pnpm-store/
+next-env.d.ts
+*.tsbuildinfo
+
+# Editores
+.idea/
+.vscode/*
+!.vscode/extensions.json
+*.swp
+
+# Sistema operacional
+.DS_Store
+Thumbs.db

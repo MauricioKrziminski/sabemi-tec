@@ -5,10 +5,6 @@ using Sabemi.Payments.Core.Processing;
 
 namespace Sabemi.Payments.Infrastructure.Processing;
 
-/// <summary>
-/// Consome o sinal em memória e processa os eventos com paralelismo limitado.
-/// Nenhuma exceção pode escapar daqui, senão o worker morre e a aplicação para de processar.
-/// </summary>
 public sealed class PaymentProcessingWorker(
     ChannelPaymentEventQueue queue,
     PaymentEventProcessor processor,

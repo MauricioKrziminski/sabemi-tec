@@ -1,9 +1,5 @@
 namespace Sabemi.Payments.Api.Middleware;
 
-/// <summary>
-/// Propaga um identificador de correlação da requisição até os logs do processamento em
-/// background, que acontece depois de a resposta já ter sido enviada.
-/// </summary>
 public static class CorrelationIdMiddleware
 {
     public const string HeaderName = "X-Correlation-Id";

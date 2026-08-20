@@ -25,12 +25,34 @@ public sealed class DashboardApiTests(PaymentsApiFactory factory) : IntegrationT
         var comSucesso = await GetPaymentsAsync("?status=sucesso");
         Assert.Equal(2, comSucesso.GetProperty("total").GetInt32());
 
-        var doContrato = await GetPaymentsAsync("?contractId=CT-A");
+        var doContrato = await GetPaymentsAsync("?search=CT-A");
         Assert.Equal(2, doContrato.GetProperty("total").GetInt32());
 
-        var combinado = await GetPaymentsAsync("?contractId=CT-A&status=error");
+        var combinado = await GetPaymentsAsync("?search=CT-A&status=error");
         Assert.Equal(1, combinado.GetProperty("total").GetInt32());
         Assert.Equal("TRX-E1", TransactionIds(combinado).Single());
+    }
+
+    [Fact]
+    public async Task Busca_encontra_por_transacao_e_por_contrato_sem_diferenciar_caixa()
+    {
+        await SeedAsync();
+
+        var porTransacao = await GetPaymentsAsync("?search=TRX-S");
+        Assert.Equal(2, porTransacao.GetProperty("total").GetInt32());
+
+        var emCaixaAlta = await GetPaymentsAsync("?search=trx-e1");
+        Assert.Equal("TRX-E1", TransactionIds(emCaixaAlta).Single());
+
+        var porContratoEmMinusculas = await GetPaymentsAsync("?search=ct-b");
+        Assert.Equal(2, porContratoEmMinusculas.GetProperty("total").GetInt32());
+
+        var parcial = await GetPaymentsAsync("?search=E1");
+        Assert.Equal("TRX-E1", TransactionIds(parcial).Single());
+
+        var semResultado = await GetPaymentsAsync("?search=inexistente");
+        Assert.Equal(0, semResultado.GetProperty("total").GetInt32());
+        Assert.Equal(0, semResultado.GetProperty("totalPages").GetInt32());
     }
 
     [Fact]
@@ -92,9 +114,6 @@ public sealed class DashboardApiTests(PaymentsApiFactory factory) : IntegrationT
         Assert.Equal(100.00m, contracts.GetProperty("items")[0].GetProperty("totalPaid").GetDecimal());
     }
 
-    /// <summary>
-    /// Semeia quatro eventos: dois liquidados, um recusado pelo banco e um reprovado na validação.
-    /// </summary>
     private async Task SeedAsync()
     {
         await Factory.SendWebhookAsync(Client, Payload("TRX-S1", "CT-A", 100.00m));

@@ -44,7 +44,6 @@ const appearances: Record<ProcessingStatus, Appearance> = {
   },
 };
 
-/** Pagamento recusado pelo banco é um evento processado, mas não é um sucesso. */
 const declined: Appearance = {
   label: "Recusado",
   icon: Ban,

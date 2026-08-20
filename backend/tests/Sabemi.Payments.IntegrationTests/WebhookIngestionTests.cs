@@ -36,10 +36,6 @@ public sealed class WebhookIngestionTests(PaymentsApiFactory factory) : Integrat
         Assert.Equal("TRX-100", contract.LastTransactionId);
     }
 
-    /// <summary>
-    /// Este é o teste que prova a idempotência de efeito, e não apenas a de registro:
-    /// o total do contrato não pode dobrar quando o parceiro reenvia a notificação.
-    /// </summary>
     [Fact]
     public async Task Reenvio_do_mesmo_id_de_transacao_nao_processa_duas_vezes()
     {
@@ -64,10 +60,6 @@ public sealed class WebhookIngestionTests(PaymentsApiFactory factory) : Integrat
         Assert.Equal(1, contract.PaymentCount);
     }
 
-    /// <summary>
-    /// Corrida real entre notificações simultâneas: quem resolve é o índice único, e a API
-    /// não pode devolver erro de servidor por causa disso.
-    /// </summary>
     [Fact]
     public async Task Notificacoes_simultaneas_geram_um_unico_registro()
     {
@@ -130,10 +122,6 @@ public sealed class WebhookIngestionTests(PaymentsApiFactory factory) : Integrat
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
 
-    /// <summary>
-    /// Um payload reprovado precisa continuar visível no painel, com a mensagem que explica a
-    /// recusa, e não pode tocar na situação do contrato.
-    /// </summary>
     [Fact]
     public async Task Payload_invalido_e_registrado_com_alerta_e_nao_altera_o_contrato()
     {
@@ -193,10 +181,6 @@ public sealed class WebhookIngestionTests(PaymentsApiFactory factory) : Integrat
         Assert.Equal(HttpStatusCode.RequestEntityTooLarge, response.StatusCode);
     }
 
-    /// <summary>
-    /// Pagamento recusado pelo banco é um evento processado com sucesso do nosso lado, mas não
-    /// entra no total liquidado do contrato.
-    /// </summary>
     [Fact]
     public async Task Pagamento_recusado_registra_o_contrato_sem_somar_no_total()
     {

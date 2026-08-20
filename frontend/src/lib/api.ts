@@ -11,7 +11,6 @@ export const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080
 
 export const PAGE_SIZE = 15;
 
-/** Erro de API com o status HTTP preservado, para a interface reagir de acordo. */
 export class ApiError extends Error {
   constructor(
     message: string,
@@ -32,8 +31,6 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     throw new ApiError(await describe(response), response.status);
   }
 
-  // Nem toda resposta de sucesso traz corpo. O reprocessamento, por exemplo, responde 202 sem
-  // conteúdo, e tentar interpretar isso como JSON quebrava a chamada depois de ela ter dado certo.
   if (response.status === 204 || response.headers.get("content-length") === "0") {
     return undefined as T;
   }
@@ -60,7 +57,7 @@ export const api = {
     });
 
     if (filters.view) params.set("status", filters.view);
-    if (filters.contractId) params.set("contractId", filters.contractId);
+    if (filters.search) params.set("search", filters.search);
 
     return request<PagedResult<PaymentEvent>>(`/api/payments?${params}`);
   },

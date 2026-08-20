@@ -17,10 +17,6 @@ interface SegmentedControlProps<T extends string> {
   label: string;
 }
 
-/**
- * Alternador de filtro com indicador que desliza entre as opções. O indicador é um único
- * elemento animado por layout, e não uma borda por item, o que mantém o movimento contínuo.
- */
 export function SegmentedControl<T extends string>({
   options,
   value,

@@ -25,7 +25,6 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html lang="pt-BR" className={`${sans.variable} ${mono.variable}`}>
       <body className="ambient-glow min-h-dvh antialiased">
         <QueryProvider>
-          {/* Respeita quem pediu menos movimento no sistema operacional. */}
           <MotionConfig reducedMotion="user">{children}</MotionConfig>
         </QueryProvider>
       </body>

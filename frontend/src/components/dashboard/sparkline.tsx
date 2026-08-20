@@ -1,17 +1,13 @@
 interface SparklineProps {
   values: number[];
   className?: string;
-  /** Cor do traço, em CSS. Recebe o token já resolvido pelo cartão. */
+
   stroke?: string;
 }
 
 const WIDTH = 120;
 const HEIGHT = 32;
 
-/**
- * Gráfico de fluxo em SVG puro. Uma biblioteca de gráficos seria peso morto para uma
- * linha de trinta pontos sem eixos nem interação.
- */
 export function Sparkline({ values, className, stroke = "currentColor" }: SparklineProps) {
   if (values.length === 0) {
     return <div className={className} style={{ height: HEIGHT }} aria-hidden />;

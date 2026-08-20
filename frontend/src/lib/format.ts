@@ -39,7 +39,6 @@ export const formatDateTime = (value: string | null | undefined) =>
 export const formatTime = (value: string | null | undefined) =>
   value ? time.format(new Date(value)) : "-";
 
-/** Distância curta em relação a agora, no estilo "há 12s". */
 export function formatRelative(value: string | null | undefined, now = Date.now()) {
   if (!value) return "-";
 

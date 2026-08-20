@@ -25,8 +25,6 @@ public static class InfrastructureServiceCollectionExtensions
             ?? throw new InvalidOperationException(
                 $"A connection string '{ConnectionStringName}' não foi configurada.");
 
-        // A fábrica permite abrir um contexto novo em pontos onde o rastreador de mudanças
-        // não pode ser reaproveitado, como no tratamento de violação de chave única.
         services.AddDbContextFactory<PaymentsDbContext>(options => options
             .UseNpgsql(connectionString)
             .UseSnakeCaseNamingConvention());
@@ -41,7 +39,6 @@ public static class InfrastructureServiceCollectionExtensions
         services.AddSingleton<IPaymentEventQueue>(provider =>
             provider.GetRequiredService<ChannelPaymentEventQueue>());
 
-        // A API troca esta implementação pela que publica no hub SignalR.
         services.TryAddSingleton<IPaymentEventNotifier, NullPaymentEventNotifier>();
 
         services.AddScoped<WebhookIngestionService>();

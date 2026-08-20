@@ -12,10 +12,6 @@ interface DrawerProps {
   children: ReactNode;
 }
 
-/**
- * Painel lateral de detalhe. Fecha com Escape ou clique fora, devolve o foco ao fechar e
- * trava a rolagem do fundo enquanto está aberto.
- */
 export function Drawer({ open, onClose, title, subtitle, children }: DrawerProps) {
   const panelRef = useRef<HTMLDivElement>(null);
   const previouslyFocused = useRef<HTMLElement | null>(null);

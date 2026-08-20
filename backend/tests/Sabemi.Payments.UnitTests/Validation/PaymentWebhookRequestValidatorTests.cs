@@ -62,9 +62,6 @@ public sealed class PaymentWebhookRequestValidatorTests
         Assert.Contains("O campo valor deve ser maior que zero.", Messages(result));
     }
 
-    /// <summary>
-    /// Truncar em silêncio esconderia divergência de centavos, então a recusa é explícita.
-    /// </summary>
     [Fact]
     public void Valor_com_mais_de_duas_casas_decimais_e_recusado()
     {
@@ -81,10 +78,6 @@ public sealed class PaymentWebhookRequestValidatorTests
         Assert.Contains("O campo data_pagamento não pode estar no futuro.", Messages(result));
     }
 
-    /// <summary>
-    /// Uma pequena diferença de relógio entre o parceiro e o servidor não pode reprovar um
-    /// evento legítimo.
-    /// </summary>
     [Fact]
     public void Data_de_pagamento_dentro_da_tolerancia_de_relogio_e_aceita()
     {
@@ -101,10 +94,6 @@ public sealed class PaymentWebhookRequestValidatorTests
         Assert.Contains("O campo status deve ser 'sucesso' ou 'erro'.", Messages(result));
     }
 
-    /// <summary>
-    /// Um payload vazio devolve exatamente uma mensagem por campo, sem repetir o mesmo campo,
-    /// porque essas mensagens vão inteiras para o alerta exibido no painel.
-    /// </summary>
     [Fact]
     public void Payload_vazio_devolve_uma_mensagem_por_campo()
     {

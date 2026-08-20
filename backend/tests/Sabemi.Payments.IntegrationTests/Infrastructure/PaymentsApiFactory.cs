@@ -12,12 +12,6 @@ using Testcontainers.PostgreSql;
 
 namespace Sabemi.Payments.IntegrationTests.Infrastructure;
 
-/// <summary>
-/// Sobe a API real contra um PostgreSQL descartável.
-///
-/// O atraso simulado do processamento cai para poucos milissegundos e a varredura de
-/// recuperação roda a cada segundo, senão a suíte levaria minutos.
-/// </summary>
 public sealed class PaymentsApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
 {
     public const string Secret = "segredo-de-teste";
@@ -32,10 +26,6 @@ public sealed class PaymentsApiFactory : WebApplicationFactory<Program>, IAsyncL
     {
         await _database.StartAsync();
 
-        // A configuração do teste chega por variável de ambiente porque essa fonte é lida
-        // depois do appsettings.json. Passar a connection string por ConfigureAppConfiguration
-        // faria o arquivo do projeto vencer, e a suíte acabaria escrevendo no banco de
-        // desenvolvimento em vez do container descartável.
         foreach (var (key, value) in Settings)
         {
             Environment.SetEnvironmentVariable(key, value);
@@ -78,7 +68,6 @@ public sealed class PaymentsApiFactory : WebApplicationFactory<Program>, IAsyncL
     public Task<PaymentsDbContext> CreateDbContextAsync() =>
         Services.GetRequiredService<IDbContextFactory<PaymentsDbContext>>().CreateDbContextAsync();
 
-    /// <summary>Assina e envia um webhook exatamente como o banco parceiro faria.</summary>
     public Task<HttpResponseMessage> SendWebhookAsync(
         HttpClient client,
         string body,
@@ -118,10 +107,6 @@ public sealed class PaymentsApiFactory : WebApplicationFactory<Program>, IAsyncL
             .FirstOrDefaultAsync(contract => contract.ContractId == contractId);
     }
 
-    /// <summary>
-    /// Espera o processamento em background chegar ao estado desejado. A espera é por condição,
-    /// e não por tempo fixo, para que o teste não fique lento nem instável.
-    /// </summary>
     public async Task<WebhookEventLog> WaitForStatusAsync(
         string transactionId,
         EventProcessingStatus expected,

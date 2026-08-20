@@ -6,10 +6,8 @@ using Sabemi.Payments.Infrastructure.Persistence;
 
 namespace Sabemi.Payments.Infrastructure.Queries;
 
-/// <summary>Consultas de leitura que alimentam o painel administrativo.</summary>
 public sealed class PaymentQueryService(PaymentsDbContext context, TimeProvider timeProvider)
 {
-    /// <summary>Janela da série temporal exibida no painel.</summary>
     public static readonly TimeSpan SeriesWindow = TimeSpan.FromMinutes(30);
 
     private const string SettledStatus = "sucesso";
@@ -128,8 +126,6 @@ public sealed class PaymentQueryService(PaymentsDbContext context, TimeProvider 
 
         var since = timeProvider.GetUtcNow() - SeriesWindow;
 
-        // A agregação por minuto acontece no banco, e não em memória, para que a métrica não
-        // dependa do volume da janela.
         var grouped = await logs
             .Where(log => log.ReceivedAt >= since)
             .GroupBy(log => new
@@ -179,10 +175,13 @@ public sealed class PaymentQueryService(PaymentsDbContext context, TimeProvider 
 
     private static IQueryable<WebhookEventLog> Filter(IQueryable<WebhookEventLog> source, PaymentQuery query)
     {
-        if (!string.IsNullOrWhiteSpace(query.ContractId))
+        if (!string.IsNullOrWhiteSpace(query.Search))
         {
+            var term = $"%{query.Search}%";
+
             source = source.Where(log =>
-                log.ContractId != null && EF.Functions.ILike(log.ContractId, $"%{query.ContractId}%"));
+                EF.Functions.ILike(log.TransactionId, term)
+                || (log.ContractId != null && EF.Functions.ILike(log.ContractId, term)));
         }
 
         return query.View switch
@@ -190,7 +189,6 @@ public sealed class PaymentQueryService(PaymentsDbContext context, TimeProvider 
             PaymentView.Success => source.Where(log =>
                 log.Status == EventProcessingStatus.Processed && log.PaymentStatus == SettledStatus),
 
-            // Erro cobre tanto a falha do nosso lado quanto a recusa do pagamento pelo banco.
             PaymentView.Error => source.Where(log =>
                 log.Status == EventProcessingStatus.Invalid
                 || log.Status == EventProcessingStatus.Failed

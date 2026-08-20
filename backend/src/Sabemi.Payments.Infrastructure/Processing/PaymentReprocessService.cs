@@ -11,16 +11,11 @@ public enum ReprocessResult
 {
     NotFound,
 
-    /// <summary>O evento está em um estado que não admite nova tentativa manual.</summary>
     NotAllowed,
 
     Requeued
 }
 
-/// <summary>
-/// Reenfileira manualmente um evento que falhou. É o que dá função operacional ao alerta
-/// exibido no painel: quem vê o erro consegue agir sobre ele.
-/// </summary>
 public sealed class PaymentReprocessService(
     IDbContextFactory<PaymentsDbContext> contextFactory,
     IPaymentEventQueue queue,
@@ -41,7 +36,6 @@ public sealed class PaymentReprocessService(
             return ReprocessResult.NotFound;
         }
 
-        // Um payload reprovado na validação continua reprovado, então reprocessar não faria sentido.
         if (eventLog.Status is not (EventProcessingStatus.Failed or EventProcessingStatus.PermanentlyFailed))
         {
             return ReprocessResult.NotAllowed;

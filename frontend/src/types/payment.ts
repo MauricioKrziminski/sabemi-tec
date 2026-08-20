@@ -1,5 +1,3 @@
-/** Espelha os contratos expostos pela API em .NET. */
-
 export type ProcessingStatus =
   | "pending"
   | "processing"
@@ -8,7 +6,6 @@ export type ProcessingStatus =
   | "failed"
   | "permanentlyFailed";
 
-/** Visão consolidada usada pelos filtros do painel. */
 export type PaymentView = "success" | "error" | "pending" | "processing";
 
 export interface PaymentEvent {
@@ -72,6 +69,6 @@ export interface Metrics {
 
 export interface PaymentFilters {
   view: PaymentView | null;
-  contractId: string;
+  search: string;
   page: number;
 }

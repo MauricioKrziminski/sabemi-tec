@@ -4,12 +4,6 @@ using Sabemi.Payments.Core.Processing;
 
 namespace Sabemi.Payments.Infrastructure.Processing;
 
-/// <summary>
-/// Canal limitado que avisa o worker de que existe trabalho novo.
-///
-/// A capacidade é limitada de propósito: sob rajada é melhor descartar o sinal, que a varredura
-/// periódica recupera, do que deixar a memória crescer sem limite.
-/// </summary>
 public sealed class ChannelPaymentEventQueue(ILogger<ChannelPaymentEventQueue> logger) : IPaymentEventQueue
 {
     private const int Capacity = 1_000;

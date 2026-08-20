@@ -2,9 +2,6 @@ using System.Globalization;
 
 namespace Sabemi.Payments.IntegrationTests.Infrastructure;
 
-/// <summary>
-/// Um único container PostgreSQL serve toda a suíte. Subir um por teste custaria minutos.
-/// </summary>
 [CollectionDefinition(Name)]
 public sealed class IntegrationCollection : ICollectionFixture<PaymentsApiFactory>
 {
@@ -26,7 +23,6 @@ public abstract class IntegrationTestBase(PaymentsApiFactory factory) : IAsyncLi
 
     public Task DisposeAsync() => Task.CompletedTask;
 
-    /// <summary>Monta o payload no contrato acordado com o banco parceiro.</summary>
     protected static string Payload(
         string transactionId,
         string contractId = "CT-1029",

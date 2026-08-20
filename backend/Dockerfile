@@ -1,5 +1,3 @@
-# Estágio de build: restaura com os arquivos de projeto primeiro para aproveitar o cache
-# de camadas quando apenas o código muda.
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
 
@@ -24,7 +22,6 @@ COPY --from=build /app .
 ENV ASPNETCORE_HTTP_PORTS=8080
 EXPOSE 8080
 
-# Usuário sem privilégios já definido na imagem oficial.
 USER $APP_UID
 
 ENTRYPOINT ["dotnet", "Sabemi.Payments.Api.dll"]

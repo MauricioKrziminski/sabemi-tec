@@ -2,7 +2,6 @@ using Sabemi.Payments.Core.Domain;
 
 namespace Sabemi.Payments.Core.Contracts;
 
-/// <summary>Representação de um evento para o painel.</summary>
 public sealed record PaymentEventDto(
     Guid Id,
     string TransactionId,

@@ -2,8 +2,6 @@ FROM node:24-alpine AS deps
 WORKDIR /app
 RUN corepack enable
 
-# O rastreamento de arquivos do build standalone não acompanha os links simbólicos que o pnpm
-# cria por padrão, então a instalação da imagem usa a árvore achatada.
 ENV NPM_CONFIG_NODE_LINKER=hoisted
 
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
@@ -16,8 +14,6 @@ RUN corepack enable
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-# A URL da API entra no bundle em tempo de build, porque é o navegador do avaliador que
-# faz as chamadas, e não o servidor do Next.
 ARG NEXT_PUBLIC_API_URL=http://localhost:8080
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 

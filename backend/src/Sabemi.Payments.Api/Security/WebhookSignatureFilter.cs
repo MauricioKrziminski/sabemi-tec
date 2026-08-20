@@ -6,18 +6,11 @@ using Sabemi.Payments.Core.Security;
 
 namespace Sabemi.Payments.Api.Security;
 
-/// <summary>
-/// Autentica a requisição antes de qualquer desserialização.
-///
-/// Ler o corpo bruto antes de autenticar é inerente ao HMAC, então a superfície exposta é
-/// limitada aqui mesmo: tipo de conteúdo e tamanho são verificados antes da leitura.
-/// </summary>
 internal sealed class WebhookSignatureFilter(
     WebhookSignatureValidator validator,
     IOptions<WebhookSignatureOptions> options,
     ILogger<WebhookSignatureFilter> logger) : IEndpointFilter
 {
-    /// <summary>Chave usada para repassar o corpo bruto ao handler sem lê-lo duas vezes.</summary>
     internal const string RawBodyKey = "webhook:raw-body";
 
     internal const int MaxBodyBytes = 64 * 1024;
@@ -38,7 +31,6 @@ internal sealed class WebhookSignatureFilter(
             return TypedResults.StatusCode(StatusCodes.Status413PayloadTooLarge);
         }
 
-        // Protege também o caso de envio em chunks, quando não há Content-Length declarado.
         if (context.HttpContext.Features.Get<IHttpMaxRequestBodySizeFeature>() is { IsReadOnly: false } sizeFeature)
         {
             sizeFeature.MaxRequestBodySize = MaxBodyBytes;
@@ -69,7 +61,6 @@ internal sealed class WebhookSignatureFilter(
                 result.Reason,
                 context.HttpContext.Connection.RemoteIpAddress);
 
-            // A resposta não detalha o motivo, para não ajudar quem está tentando forjar a assinatura.
             return TypedResults.Unauthorized();
         }
 

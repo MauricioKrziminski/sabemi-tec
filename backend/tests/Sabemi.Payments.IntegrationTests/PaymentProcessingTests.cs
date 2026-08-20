@@ -7,10 +7,6 @@ namespace Sabemi.Payments.IntegrationTests;
 
 public sealed class PaymentProcessingTests(PaymentsApiFactory factory) : IntegrationTestBase(factory)
 {
-    /// <summary>
-    /// Prova que a fila de verdade é a tabela, e não o canal em memória: um evento inserido
-    /// direto no banco, sem passar pelo endpoint, é encontrado e processado pela varredura.
-    /// </summary>
     [Fact]
     public async Task Evento_pendente_no_banco_e_recuperado_sem_passar_pelo_endpoint()
     {
@@ -40,10 +36,6 @@ public sealed class PaymentProcessingTests(PaymentsApiFactory factory) : Integra
         Assert.Equal(75.25m, contract!.TotalPaid);
     }
 
-    /// <summary>
-    /// O banco parceiro pode reenviar uma notificação antiga depois de uma nova. Os acumuladores
-    /// somam sempre, mas a situação atual do contrato continua sendo a do pagamento mais recente.
-    /// </summary>
     [Fact]
     public async Task Evento_fora_de_ordem_soma_no_total_sem_regredir_a_situacao_do_contrato()
     {

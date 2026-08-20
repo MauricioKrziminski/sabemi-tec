@@ -8,14 +8,6 @@ using Sabemi.Payments.Infrastructure.Persistence;
 
 namespace Sabemi.Payments.Infrastructure.Processing;
 
-/// <summary>
-/// Varredura que garante a entrega mesmo sem broker externo.
-///
-/// O canal em memória é apenas um atalho para evitar latência de polling. A fila de verdade é a
-/// tabela de eventos brutos, e é esta varredura que fecha as janelas em que o sinal se perde:
-/// processo derrubado entre o commit e o enfileiramento, canal cheio, evento reservado por uma
-/// instância que morreu, ou tentativa aguardando o fim do backoff.
-/// </summary>
 public sealed class PaymentRecoveryWorker(
     IDbContextFactory<PaymentsDbContext> contextFactory,
     IPaymentEventQueue queue,
@@ -29,7 +21,6 @@ public sealed class PaymentRecoveryWorker(
     {
         using var timer = new PeriodicTimer(_options.RecoveryInterval, timeProvider);
 
-        // A primeira passada acontece na inicialização, recuperando o que ficou de um restart.
         do
         {
             try
@@ -55,7 +46,6 @@ public sealed class PaymentRecoveryWorker(
         var now = timeProvider.GetUtcNow();
         var abandonedBefore = now - _options.StuckTimeout;
 
-        // Eventos reservados por uma instância que não concluiu o trabalho.
         var exhausted = await context.WebhookEventLogs
             .Where(log => log.Status == EventProcessingStatus.Processing
                 && log.ProcessingStartedAt < abandonedBefore

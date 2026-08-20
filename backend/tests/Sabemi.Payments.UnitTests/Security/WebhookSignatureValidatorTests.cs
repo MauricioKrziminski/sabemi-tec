@@ -56,10 +56,6 @@ public sealed class WebhookSignatureValidatorTests
         Assert.Equal(SignatureFailureReason.SignatureMismatch, result.Reason);
     }
 
-    /// <summary>
-    /// O carimbo de tempo faz parte da mensagem assinada, então reaproveitar uma assinatura
-    /// antiga com um carimbo novo não funciona.
-    /// </summary>
     [Fact]
     public void Assinatura_capturada_nao_pode_ser_reenviada_com_outro_carimbo()
     {

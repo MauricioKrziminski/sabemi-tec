@@ -3,16 +3,14 @@ using Sabemi.Payments.Core.Domain;
 
 namespace Sabemi.Payments.Core.Contracts;
 
-/// <summary>Filtros aceitos pela listagem do painel.</summary>
-public sealed record PaymentQuery(PaymentView? View, string? ContractId, int Page, int PageSize)
+public sealed record PaymentQuery(PaymentView? View, string? Search, int Page, int PageSize)
 {
     public const int DefaultPageSize = 20;
     public const int MaxPageSize = 100;
 
-    /// <summary>Normaliza a paginação para que a API nunca dependa de entrada bem comportada.</summary>
-    public static PaymentQuery Create(PaymentView? view, string? contractId, int? page, int? pageSize) => new(
+    public static PaymentQuery Create(PaymentView? view, string? search, int? page, int? pageSize) => new(
         view,
-        string.IsNullOrWhiteSpace(contractId) ? null : contractId.Trim(),
+        string.IsNullOrWhiteSpace(search) ? null : search.Trim(),
         Math.Max(page ?? 1, 1),
         Math.Clamp(pageSize ?? DefaultPageSize, 1, MaxPageSize));
 }
@@ -22,7 +20,6 @@ public sealed record PagedResult<T>(IReadOnlyList<T> Items, int Page, int PageSi
     public int TotalPages => Total == 0 ? 0 : (int)Math.Ceiling(Total / (double)PageSize);
 }
 
-/// <summary>Detalhe completo de um evento, incluindo o payload original.</summary>
 public sealed record PaymentEventDetailsDto(
     Guid Id,
     string TransactionId,
@@ -63,7 +60,6 @@ public sealed record ContractStatusDto(
         contract.UpdatedAt);
 }
 
-/// <summary>Resumo exibido nos cartões do painel.</summary>
 public sealed record MetricsDto(
     int TotalEvents,
     int Processed,
@@ -73,5 +69,4 @@ public sealed record MetricsDto(
     int Contracts,
     IReadOnlyList<MetricsBucketDto> Series);
 
-/// <summary>Ponto da série temporal usada no gráfico de fluxo.</summary>
 public sealed record MetricsBucketDto(DateTimeOffset Minute, int Total, int Failures);

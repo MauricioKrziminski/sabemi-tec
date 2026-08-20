@@ -5,7 +5,6 @@ using Sabemi.Payments.Infrastructure.Queries;
 
 namespace Sabemi.Payments.Api.Endpoints;
 
-/// <summary>Endpoints de leitura e operação consumidos pelo painel administrativo.</summary>
 public static class DashboardEndpoints
 {
     public static IEndpointRouteBuilder MapDashboardEndpoints(this IEndpointRouteBuilder routes)
@@ -13,7 +12,7 @@ public static class DashboardEndpoints
         var payments = routes.MapGroup("/api/payments").WithTags("Pagamentos");
 
         payments.MapGet("", ListPaymentsAsync)
-            .WithSummary("Lista os eventos recebidos, com filtro por situação e por contrato");
+            .WithSummary("Lista os eventos recebidos, com filtro por situação e busca por transação ou contrato");
 
         payments.MapGet("/{id:guid}", GetPaymentAsync)
             .WithSummary("Detalha um evento, incluindo o payload original");
@@ -35,7 +34,7 @@ public static class DashboardEndpoints
     private static async Task<IResult> ListPaymentsAsync(
         PaymentQueryService queries,
         [FromQuery] string? status,
-        [FromQuery] string? contractId,
+        [FromQuery] string? search,
         [FromQuery] int? page,
         [FromQuery] int? pageSize,
         CancellationToken cancellationToken)
@@ -50,7 +49,7 @@ public static class DashboardEndpoints
             });
         }
 
-        var query = PaymentQuery.Create(view, contractId, page, pageSize);
+        var query = PaymentQuery.Create(view, search, page, pageSize);
         var result = await queries.ListAsync(query, cancellationToken);
 
         return TypedResults.Ok(result);
@@ -107,10 +106,6 @@ public static class DashboardEndpoints
         CancellationToken cancellationToken) =>
         TypedResults.Ok(await queries.GetMetricsAsync(cancellationToken));
 
-    /// <summary>
-    /// Aceita os rótulos em inglês do contrato da API e também os termos em português usados
-    /// na interface, para que o painel possa passar o filtro adiante sem tradução.
-    /// </summary>
     private static bool TryParseView(string? status, out PaymentView? view)
     {
         view = null;

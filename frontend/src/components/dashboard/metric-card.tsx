@@ -14,10 +14,6 @@ const tones: Record<Tone, { text: string; stroke: string }> = {
   info: { text: "text-info", stroke: "var(--color-info)" },
 };
 
-/**
- * Interpola o número exibido até o valor real. A leitura fica mais confortável quando o
- * total muda em tempo real, porque o olho acompanha a transição em vez do salto.
- */
 function useAnimatedNumber(value: number, duration = 520) {
   const [current, setCurrent] = useState(value);
   const previous = useRef(value);

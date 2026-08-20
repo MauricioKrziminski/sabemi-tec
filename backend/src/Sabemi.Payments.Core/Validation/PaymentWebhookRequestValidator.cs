@@ -4,13 +4,8 @@ using Sabemi.Payments.Core.Domain;
 
 namespace Sabemi.Payments.Core.Validation;
 
-/// <summary>
-/// Regras de aceitação do payload. As mensagens são escritas em português porque são
-/// exibidas diretamente no painel administrativo quando um evento é rejeitado.
-/// </summary>
 public sealed class PaymentWebhookRequestValidator : AbstractValidator<PaymentWebhookRequest>
 {
-    /// <summary>Folga para diferença de relógio entre o parceiro e o servidor.</summary>
     public static readonly TimeSpan FutureTolerance = TimeSpan.FromMinutes(5);
 
     public PaymentWebhookRequestValidator(TimeProvider timeProvider)
@@ -26,8 +21,6 @@ public sealed class PaymentWebhookRequestValidator : AbstractValidator<PaymentWe
         RuleFor(request => request.Amount)
             .NotNull().WithMessage("O campo valor é obrigatório.");
 
-        // As regras seguintes só fazem sentido quando o campo veio preenchido. Sem esta
-        // separação, um payload vazio devolveria duas mensagens sobre o mesmo campo.
         When(request => request.Amount is not null, () =>
             RuleFor(request => request.Amount)
                 .GreaterThan(0).WithMessage("O campo valor deve ser maior que zero.")
@@ -51,9 +44,6 @@ public sealed class PaymentWebhookRequestValidator : AbstractValidator<PaymentWe
                     .WithMessage("O campo status deve ser 'sucesso' ou 'erro'."));
     }
 
-    /// <summary>
-    /// Rejeita precisão maior que a monetária em vez de truncar em silêncio.
-    /// </summary>
     private static bool HasAtMostTwoDecimals(decimal? amount) =>
         amount is null || decimal.Round(amount.Value, 2) == amount.Value;
 }

@@ -1,12 +1,5 @@
 @import "tailwindcss";
 
-/*
-  Sistema de design do painel.
-
-  Uma superfície escura profunda com acento de liquidação em verde-água, pensada para leitura
-  de dados financeiros: números grandes com fonte tabular, contraste alto no que importa e
-  ruído baixo em todo o resto.
-*/
 @theme {
   --color-canvas: #07080a;
   --color-surface: #0d0f13;
@@ -81,6 +74,19 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+button:not(:disabled),
+[role="radio"],
+[role="button"],
+a[href],
+summary,
+label:has(input[type="checkbox"]) {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+}
+
 ::selection {
   background-color: color-mix(in oklab, var(--color-accent) 30%, transparent);
   color: var(--color-ink);
@@ -110,7 +116,6 @@ body {
   background: var(--color-ink-faint);
 }
 
-/* Luz ambiente do topo da página, que dá profundidade sem pesar no contraste. */
 @utility ambient-glow {
   background-image:
     radial-gradient(60rem 32rem at 18% -12%, color-mix(in oklab, var(--color-accent) 12%, transparent), transparent),

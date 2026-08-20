@@ -9,7 +9,6 @@ namespace Sabemi.Payments.Api.Endpoints;
 
 public static class WebhookEndpoints
 {
-    /// <summary>Headers preservados no log. A assinatura fica de fora de propósito.</summary>
     private static readonly string[] AuditedHeaders =
     [
         "User-Agent",
@@ -42,7 +41,6 @@ public static class WebhookEndpoints
         WebhookIngestionService ingestion,
         CancellationToken cancellationToken)
     {
-        // O corpo já foi lido e autenticado pelo filtro de assinatura.
         var rawBody = (string)context.Items[WebhookSignatureFilter.RawBodyKey]!;
 
         var request = new WebhookIngestionRequest(
@@ -58,12 +56,9 @@ public static class WebhookEndpoints
                 $"/api/payments/{accepted.EventId}",
                 new WebhookReceiptResponse(accepted.EventId, "Pending", false)),
 
-            // Reenvio é sucesso idempotente, não erro. Responder 409 faria o parceiro
-            // acionar a operação dele sem necessidade.
             IngestionOutcome.Duplicate duplicate => TypedResults.Ok(
                 new WebhookReceiptResponse(duplicate.EventId, duplicate.Status.ToString(), true)),
 
-            // O evento fica registrado e visível no painel, mas o parceiro recebe a recusa.
             IngestionOutcome.Rejected rejected => TypedResults.Problem(new ProblemDetails
             {
                 Status = StatusCodes.Status422UnprocessableEntity,
@@ -108,8 +103,4 @@ public static class WebhookEndpoints
     }
 }
 
-/// <summary>Confirmação devolvida ao banco parceiro.</summary>
-/// <param name="Id">Identificador do evento registrado.</param>
-/// <param name="Status">Situação atual do processamento.</param>
-/// <param name="Duplicated">Verdadeiro quando o id de transação já havia sido recebido.</param>
 public sealed record WebhookReceiptResponse(Guid Id, string Status, bool Duplicated);

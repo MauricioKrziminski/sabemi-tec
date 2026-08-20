@@ -12,7 +12,6 @@ interface SearchInputProps {
   className?: string;
 }
 
-/** Campo de busca com atalho visível e ação de limpar. */
 export const SearchInput = forwardRef<HTMLInputElement, SearchInputProps>(function SearchInput(
   { value, onChange, placeholder, label, className },
   ref,

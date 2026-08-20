@@ -3,10 +3,6 @@ using Sabemi.Payments.Core.Domain;
 
 namespace Sabemi.Payments.UnitTests.Contracts;
 
-/// <summary>
-/// A visão é o que alimenta o filtro "Sucesso/Erro" do painel, então a tradução entre o ciclo
-/// de vida do evento e o resultado do pagamento precisa estar coberta.
-/// </summary>
 public sealed class PaymentViewsTests
 {
     [Theory]

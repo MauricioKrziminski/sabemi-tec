@@ -5,13 +5,6 @@ using Microsoft.Extensions.Options;
 
 namespace Sabemi.Payments.Core.Security;
 
-/// <summary>
-/// Valida a assinatura HMAC-SHA256 enviada pelo banco parceiro.
-///
-/// A assinatura cobre o carimbo de tempo e o corpo bruto da requisição, no formato
-/// <c>{timestamp}.{corpo}</c>. Assinar o carimbo junto com o corpo é o que impede que uma
-/// requisição capturada seja reenviada mais tarde com um carimbo novo.
-/// </summary>
 public sealed class WebhookSignatureValidator(IOptions<WebhookSignatureOptions> options, TimeProvider timeProvider)
 {
     private const string SignaturePrefix = "sha256=";
@@ -49,15 +42,11 @@ public sealed class WebhookSignatureValidator(IOptions<WebhookSignatureOptions> 
 
         var expected = ComputeHash(_options.Secret, unixSeconds, rawBody);
 
-        // Comparação em tempo constante, para não vazar o segredo por diferença de tempo de resposta.
         return CryptographicOperations.FixedTimeEquals(expected, provided)
             ? SignatureValidationResult.Success
             : SignatureValidationResult.Failure(SignatureFailureReason.SignatureMismatch);
     }
 
-    /// <summary>
-    /// Gera o valor do header de assinatura. Usado pelos testes e pelos scripts de apoio.
-    /// </summary>
     public static string Compute(string secret, long unixSeconds, string rawBody) =>
         SignaturePrefix + Convert.ToHexStringLower(ComputeHash(secret, unixSeconds, rawBody));
 

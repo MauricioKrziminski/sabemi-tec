@@ -37,7 +37,6 @@ services:
     build:
       context: ./frontend
       args:
-        # O painel roda no navegador do avaliador, então a URL da API é a do host.
         NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8080}
     container_name: sabemi-web
     restart: unless-stopped

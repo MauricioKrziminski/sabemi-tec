@@ -14,8 +14,6 @@ internal sealed class WebhookEventLogConfiguration : IEntityTypeConfiguration<We
                 "ck_webhook_event_logs_status",
                 "status IN ('Pending', 'Processing', 'Processed', 'Invalid', 'Failed', 'PermanentlyFailed')");
 
-            // Eventos reprovados na validação guardam o valor exatamente como veio, inclusive
-            // zero ou negativo, porque o painel precisa mostrar o dado que causou a recusa.
             table.HasCheckConstraint(
                 "ck_webhook_event_logs_amount",
                 "amount IS NULL OR amount > 0 OR status = 'Invalid'");
@@ -54,7 +52,6 @@ internal sealed class WebhookEventLogConfiguration : IEntityTypeConfiguration<We
 
         builder.Ignore(log => log.IsTerminal);
 
-        // Fonte da verdade da idempotência: o banco recusa a segunda inserção do mesmo id de transação.
         builder.HasIndex(log => log.TransactionId)
             .IsUnique()
             .HasDatabaseName("ux_webhook_event_logs_transaction_id");
@@ -71,7 +68,6 @@ internal sealed class WebhookEventLogConfiguration : IEntityTypeConfiguration<We
             .IsDescending(false, true)
             .HasDatabaseName("ix_webhook_event_logs_status_received_at");
 
-        // Índice parcial que atende a varredura de reprocessamento sem pesar na escrita.
         builder.HasIndex(log => log.NextAttemptAt)
             .HasFilter("status IN ('Pending', 'Failed')")
             .HasDatabaseName("ix_webhook_event_logs_next_attempt_at");

@@ -18,13 +18,11 @@ export function Dashboard() {
   const searchParams = useSearchParams();
 
   const view = readView(searchParams.get("status"));
-  const contractParam = searchParams.get("contrato") ?? "";
+  const searchParam = searchParams.get("busca") ?? "";
   const page = Math.max(Number(searchParams.get("pagina") ?? 1), 1);
 
-  // A busca fica em estado local para responder a cada tecla, e só chega à URL e à API
-  // depois da pausa da digitação.
-  const [contractInput, setContractInput] = useState(contractParam);
-  const contractId = useDebouncedValue(contractInput);
+  const [searchInput, setSearchInput] = useState(searchParam);
+  const search = useDebouncedValue(searchInput);
 
   const [selected, setSelected] = useState<PaymentEvent | null>(null);
   const closeDetails = useCallback(() => setSelected(null), []);
@@ -34,15 +32,14 @@ export function Dashboard() {
   const filters: PaymentFilters = useMemo(
     () => ({
       view: view === "all" ? null : (view as PaymentView),
-      contractId,
+      search,
       page,
     }),
-    [view, contractId, page],
+    [view, search, page],
   );
 
   const { data, isPending, error, refetch } = usePayments(filters);
 
-  /** O estado dos filtros vive na URL, então um recorte do painel é compartilhável. */
   const updateParams = useCallback(
     (changes: Record<string, string | null>) => {
       const params = new URLSearchParams(searchParams.toString());
@@ -62,10 +59,10 @@ export function Dashboard() {
     [updateParams],
   );
 
-  const onContractIdChange = useCallback(
+  const onSearchChange = useCallback(
     (value: string) => {
-      setContractInput(value);
-      updateParams({ contrato: value || null, pagina: null });
+      setSearchInput(value);
+      updateParams({ busca: value || null, pagina: null });
     },
     [updateParams],
   );
@@ -94,8 +91,8 @@ export function Dashboard() {
         <FiltersBar
           view={view}
           onViewChange={onViewChange}
-          contractId={contractInput}
-          onContractIdChange={onContractIdChange}
+          search={searchInput}
+          onSearchChange={onSearchChange}
         />
 
         <PaymentsTable
@@ -109,7 +106,6 @@ export function Dashboard() {
         />
       </div>
 
-      {/* Leitores de tela recebem o aviso de chegada sem que o foco seja roubado. */}
       <p aria-live="polite" className="sr-only">
         {data ? `${data.total} eventos na listagem atual.` : "Carregando eventos."}
       </p>

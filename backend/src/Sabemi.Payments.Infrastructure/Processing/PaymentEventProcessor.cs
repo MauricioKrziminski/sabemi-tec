@@ -8,15 +8,6 @@ using Sabemi.Payments.Infrastructure.Persistence;
 
 namespace Sabemi.Payments.Infrastructure.Processing;
 
-/// <summary>
-/// Aplica a regra de negócio de um evento e consolida a situação do contrato.
-///
-/// Duas garantias sustentam este processador:
-/// a reserva do evento usa <c>FOR UPDATE SKIP LOCKED</c>, então múltiplas instâncias podem rodar
-/// ao mesmo tempo sem processar o mesmo evento; e a consolidação do contrato e a marcação do
-/// evento como processado acontecem na mesma transação, então uma nova tentativa nunca soma o
-/// mesmo pagamento duas vezes.
-/// </summary>
 public sealed class PaymentEventProcessor(
     IDbContextFactory<PaymentsDbContext> contextFactory,
     IPaymentEventNotifier notifier,
@@ -35,7 +26,6 @@ public sealed class PaymentEventProcessor(
         var eventLog = await ClaimAsync(context, eventId, cancellationToken);
         if (eventLog is null)
         {
-            // Já processado, ou reservado por outro worker. Nada a fazer.
             return;
         }
 
@@ -43,7 +33,6 @@ public sealed class PaymentEventProcessor(
 
         try
         {
-            // Simula o custo da regra de negócio. O banco parceiro já recebeu a resposta.
             await Task.Delay(_options.SimulatedWorkDelay, timeProvider, cancellationToken);
 
             await ApplyAsync(context, eventLog, cancellationToken);
@@ -55,7 +44,6 @@ public sealed class PaymentEventProcessor(
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
-            // Encerramento da aplicação. O evento fica reservado e a varredura o recupera.
             throw;
         }
         catch (Exception exception)
@@ -66,10 +54,6 @@ public sealed class PaymentEventProcessor(
         await ReloadAndNotifyAsync(context, eventId, cancellationToken);
     }
 
-    /// <summary>
-    /// Reserva o evento para este worker. O <c>SKIP LOCKED</c> faz a corrida entre instâncias
-    /// terminar sem espera: quem não conseguir a linha simplesmente não processa.
-    /// </summary>
     private static async Task<WebhookEventLog?> ClaimAsync(
         PaymentsDbContext context,
         Guid eventId,
@@ -124,13 +108,6 @@ public sealed class PaymentEventProcessor(
         await transaction.CommitAsync(cancellationToken);
     }
 
-    /// <summary>
-    /// Consolida o contrato em uma única instrução atômica.
-    ///
-    /// Os acumuladores sempre somam, enquanto os campos do "último pagamento" só são
-    /// sobrescritos por um evento mais recente. É isso que mantém o resultado correto quando o
-    /// banco parceiro reenvia notificações fora de ordem.
-    /// </summary>
     private static async Task UpsertContractAsync(
         PaymentsDbContext context,
         WebhookEventLog eventLog,
@@ -141,7 +118,6 @@ public sealed class PaymentEventProcessor(
         var settled = PaymentOutcomes.TryParse(eventLog.PaymentStatus, out var outcome)
             && outcome == PaymentOutcome.Success;
 
-        // Pagamento recusado registra a situação do contrato, mas não entra no total liquidado.
         var amount = settled ? eventLog.Amount!.Value : 0m;
         var count = settled ? 1 : 0;
 
@@ -225,7 +201,6 @@ public sealed class PaymentEventProcessor(
         }
         catch (Exception exception)
         {
-            // O painel é um consumidor secundário: uma falha de notificação não invalida o processamento.
             logger.LogWarning(exception, "Não foi possível notificar o painel sobre o evento {EventId}.", eventLog.Id);
         }
     }

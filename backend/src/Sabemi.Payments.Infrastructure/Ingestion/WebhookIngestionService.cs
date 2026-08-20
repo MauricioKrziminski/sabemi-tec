@@ -14,12 +14,6 @@ using Sabemi.Payments.Infrastructure.Persistence;
 
 namespace Sabemi.Payments.Infrastructure.Ingestion;
 
-/// <summary>
-/// Recebe o webhook, registra o evento bruto e devolve o controle rapidamente.
-///
-/// A regra de negócio não roda aqui: o compromisso com o banco parceiro é responder rápido,
-/// então este serviço apenas persiste e sinaliza o worker.
-/// </summary>
 public sealed class WebhookIngestionService(
     IDbContextFactory<PaymentsDbContext> contextFactory,
     IValidator<PaymentWebhookRequest> validator,
@@ -32,7 +26,6 @@ public sealed class WebhookIngestionService(
 
     private static readonly JsonSerializerOptions SerializerOptions = new(JsonSerializerDefaults.Web)
     {
-        // Aceita "valor": "1240.00" além de "valor": 1240.00, porque provedores variam nesse ponto.
         NumberHandling = JsonNumberHandling.AllowReadingFromString
     };
 
@@ -88,8 +81,6 @@ public sealed class WebhookIngestionService(
         }
         catch (DbUpdateException exception) when (IsUniqueViolation(exception))
         {
-            // Duas notificações idênticas chegaram ao mesmo tempo. O índice único resolveu a corrida.
-            // O rastreador de mudanças deste contexto ficou inconsistente, então a leitura usa outro.
             await using var freshContext = await contextFactory.CreateDbContextAsync(cancellationToken);
             var conflicting = await freshContext.WebhookEventLogs
                 .AsNoTracking()
@@ -102,7 +93,6 @@ public sealed class WebhookIngestionService(
 
         if (isValid)
         {
-            // Só depois do commit, senão o worker pode buscar um evento que ainda não existe.
             queue.TryEnqueue(eventLog.Id);
             return new IngestionOutcome.Accepted(eventLog.Id);
         }
@@ -145,10 +135,6 @@ public sealed class WebhookIngestionService(
         return errors;
     }
 
-    /// <summary>
-    /// Reenvio do mesmo id de transação. A resposta é idempotente, mas um corpo diferente do
-    /// original é sinalizado, porque indica correção do lado do parceiro ou tentativa de fraude.
-    /// </summary>
     private async Task<IngestionOutcome> HandleDuplicateAsync(
         WebhookEventLog existing,
         byte[] payloadHash,
@@ -196,10 +182,6 @@ public sealed class WebhookIngestionService(
         }
     }
 
-    /// <summary>
-    /// A chave de idempotência sai do JSON bruto, e não do objeto tipado, para que um payload
-    /// reprovado na validação também fique protegido contra reprocessamento.
-    /// </summary>
     private static string ExtractTransactionId(JsonObject payload, byte[] payloadHash)
     {
         if (payload.TryGetPropertyValue("id_transacao", out var node) && node is JsonValue value)
@@ -217,8 +199,6 @@ public sealed class WebhookIngestionService(
             }
         }
 
-        // Sem identificador utilizável, o próprio conteúdo vira a chave, o que mantém a
-        // idempotência mesmo para reenvios de um payload malformado.
         return $"sem-id-{Convert.ToHexStringLower(payloadHash)[..16]}";
     }
 
@@ -237,5 +217,4 @@ public sealed class WebhookIngestionService(
     }
 }
 
-/// <summary>Dados brutos do recebimento, já autenticados pelo filtro de assinatura.</summary>
 public sealed record WebhookIngestionRequest(string RawBody, string? Headers, string? CorrelationId);

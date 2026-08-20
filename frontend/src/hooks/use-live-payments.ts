@@ -6,16 +6,12 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { API_URL } from "@/lib/api";
 import type { PaymentEvent } from "@/types/payment";
 
-export type LiveStatus = "connecting" | "live" | "reconnecting" | "offline";
-
 const HIGHLIGHT_DURATION = 2_400;
 const REFRESH_DEBOUNCE = 250;
 
 interface LivePayments {
-  status: LiveStatus;
   /** Eventos que acabaram de chegar ou mudar, usados para o realce visual da linha. */
   highlighted: Set<string>;
-  lastEventAt: Date | null;
 }
 
 /**
@@ -27,9 +23,7 @@ interface LivePayments {
  */
 export function useLivePayments(): LivePayments {
   const queryClient = useQueryClient();
-  const [status, setStatus] = useState<LiveStatus>("connecting");
   const [highlighted, setHighlighted] = useState<Set<string>>(() => new Set());
-  const [lastEventAt, setLastEventAt] = useState<Date | null>(null);
 
   const refreshTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const highlightTimers = useRef(new Map<string, ReturnType<typeof setTimeout>>());
@@ -71,7 +65,6 @@ export function useLivePayments(): LivePayments {
       .build();
 
     const onEvent = (payment: PaymentEvent) => {
-      setLastEventAt(new Date());
       highlight(payment.id);
       refresh();
     };
@@ -79,32 +72,16 @@ export function useLivePayments(): LivePayments {
     connection.on("paymentReceived", onEvent);
     connection.on("paymentUpdated", onEvent);
 
-    connection.onreconnecting(() => setStatus("reconnecting"));
+    // O que aconteceu durante a queda não chegou por evento, então a lista é buscada de novo.
+    connection.onreconnected(() => refresh());
 
-    connection.onreconnected(() => {
-      setStatus("live");
-      // O que aconteceu durante a queda não chegou por evento, então a lista é buscada de novo.
-      refresh();
+    const started = connection.start().catch(() => {
+      // Sem tempo real a lista continua funcionando pelas consultas comuns.
     });
-
-    connection.onclose(() => setStatus("offline"));
-
-    let active = true;
-
-    const started = connection
-      .start()
-      .then(() => {
-        if (active) setStatus("live");
-      })
-      .catch(() => {
-        if (active) setStatus("offline");
-      });
 
     const timers = highlightTimers.current;
 
     return () => {
-      active = false;
-
       if (refreshTimer.current) clearTimeout(refreshTimer.current);
       timers.forEach((timer) => clearTimeout(timer));
       timers.clear();
@@ -119,5 +96,5 @@ export function useLivePayments(): LivePayments {
     };
   }, [highlight, refresh]);
 
-  return { status, highlighted, lastEventAt };
+  return { highlighted };
 }

@@ -7,7 +7,6 @@ import { useLivePayments } from "@/hooks/use-live-payments";
 import { usePayments } from "@/hooks/use-payments";
 import type { PaymentEvent, PaymentFilters, PaymentView } from "@/types/payment";
 import { FiltersBar, type ViewFilter } from "./filters-bar";
-import { LiveIndicator } from "./live-indicator";
 import { MetricsRow } from "./metrics-row";
 import { PaymentDetailDrawer } from "./payment-detail-drawer";
 import { PaymentsTable } from "./payments-table";
@@ -29,7 +28,7 @@ export function Dashboard() {
 
   const [selected, setSelected] = useState<PaymentEvent | null>(null);
 
-  const { status, highlighted, lastEventAt } = useLivePayments();
+  const { highlighted } = useLivePayments();
 
   const filters: PaymentFilters = useMemo(
     () => ({
@@ -77,21 +76,15 @@ export function Dashboard() {
 
   return (
     <div className="mx-auto w-full max-w-6xl px-5 pb-20 pt-10 sm:px-8">
-      <header className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
-        <div>
-          <p className="text-[11px] font-medium uppercase tracking-[0.28em] text-accent">
-            Sabemi
-          </p>
-          <h1 className="mt-2 text-2xl font-semibold tracking-tight text-ink sm:text-3xl">
-            Liquidações recebidas
-          </h1>
-          <p className="mt-1.5 max-w-lg text-sm leading-relaxed text-ink-muted">
-            Notificações de pagamento do banco parceiro, com a situação de cada evento e do
-            contrato correspondente.
-          </p>
-        </div>
-
-        <LiveIndicator status={status} lastEventAt={lastEventAt} />
+      <header>
+        <p className="text-[11px] font-medium uppercase tracking-[0.28em] text-accent">Sabemi</p>
+        <h1 className="mt-2 text-2xl font-semibold tracking-tight text-ink sm:text-3xl">
+          Liquidações recebidas
+        </h1>
+        <p className="mt-1.5 max-w-lg text-sm leading-relaxed text-ink-muted">
+          Notificações de pagamento do banco parceiro, com a situação de cada evento e do contrato
+          correspondente.
+        </p>
       </header>
 
       <div className="mt-8 space-y-6">

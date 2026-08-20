@@ -1,0 +1,11 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Sabemi.Payments.Api/Sabemi.Payments.Api.csproj" />
+    <Project Path="src/Sabemi.Payments.Core/Sabemi.Payments.Core.csproj" />
+    <Project Path="src/Sabemi.Payments.Infrastructure/Sabemi.Payments.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Sabemi.Payments.IntegrationTests/Sabemi.Payments.IntegrationTests.csproj" />
+    <Project Path="tests/Sabemi.Payments.UnitTests/Sabemi.Payments.UnitTests.csproj" />
+  </Folder>
+</Solution>

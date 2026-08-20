@@ -4,7 +4,6 @@ using System.Text;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Sabemi.Payments.Core.Domain;
 using Sabemi.Payments.Core.Security;
@@ -29,28 +28,44 @@ public sealed class PaymentsApiFactory : WebApplicationFactory<Program>, IAsyncL
         .WithPassword("sabemi")
         .Build();
 
-    public Task InitializeAsync() => _database.StartAsync();
+    public async Task InitializeAsync()
+    {
+        await _database.StartAsync();
+
+        // A configuração do teste chega por variável de ambiente porque essa fonte é lida
+        // depois do appsettings.json. Passar a connection string por ConfigureAppConfiguration
+        // faria o arquivo do projeto vencer, e a suíte acabaria escrevendo no banco de
+        // desenvolvimento em vez do container descartável.
+        foreach (var (key, value) in Settings)
+        {
+            Environment.SetEnvironmentVariable(key, value);
+        }
+    }
+
+    private Dictionary<string, string> Settings => new()
+    {
+        ["ConnectionStrings__Payments"] = _database.GetConnectionString(),
+        ["Webhook__Secret"] = Secret,
+        ["Processing__SimulatedWorkDelay"] = "00:00:00.050",
+        ["Processing__InitialRetryDelay"] = "00:00:00.100",
+        ["Processing__RecoveryInterval"] = "00:00:01",
+        ["Processing__StuckTimeout"] = "00:00:05"
+    };
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseEnvironment("Testing");
-
-        builder.ConfigureAppConfiguration((_, configuration) => configuration.AddInMemoryCollection(
-            new Dictionary<string, string?>
-            {
-                ["ConnectionStrings:Payments"] = _database.GetConnectionString(),
-                ["Webhook:Secret"] = Secret,
-                ["Processing:SimulatedWorkDelay"] = "00:00:00.050",
-                ["Processing:InitialRetryDelay"] = "00:00:00.100",
-                ["Processing:RecoveryInterval"] = "00:00:01",
-                ["Processing:StuckTimeout"] = "00:00:05"
-            }));
     }
 
     async Task IAsyncLifetime.DisposeAsync()
     {
         await base.DisposeAsync();
         await _database.DisposeAsync();
+
+        foreach (var key in Settings.Keys)
+        {
+            Environment.SetEnvironmentVariable(key, null);
+        }
     }
 
     public async Task ResetDatabaseAsync()
